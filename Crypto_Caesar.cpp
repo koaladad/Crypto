@@ -18,11 +18,31 @@ int main()
 
 	cout << "offset is " << offset.GetOffset() << endl;
 
-	char letter = 'Z';
+	char letter = 'a';
 	cout << "letter is " << letter << endl;
 	cout << "encrypted letter is " << Encrypt(letter, offset.GetOffset()) << endl;
+	cout << "decrypted letter is " << Decrypt(letter, offset.GetOffset()) << endl;
+
+	letter = 'A';
+	cout << "letter is " << letter << endl;
+	cout << "encrypted letter is " << Encrypt(letter, offset.GetOffset()) << endl;
+	cout << "decrypted letter is " << Decrypt(letter, offset.GetOffset()) << endl;
+
+	letter = 'b';
+	cout << "letter is " << letter << endl;
+	cout << "encrypted letter is " << Encrypt(letter, offset.GetOffset()) << endl;
+	cout << "decrypted letter is " << Decrypt(letter, offset.GetOffset()) << endl;
+
+	letter = 'B';
+	cout << "letter is " << letter << endl;
+	cout << "encrypted letter is " << Encrypt(letter, offset.GetOffset()) << endl;
+	cout << "decrypted letter is " << Decrypt(letter, offset.GetOffset()) << endl;
+
+	//cout << "{ is " << (int)'{' << endl; //123
+	//cout << ") is " << (int)')'; //41
 
 	//test input
+	/*
 	const int MYSTRINGLEN = 20;
 	char * ptr = "this is a test\n";
 	char input[MYSTRINGLEN] = "this is a test\n";
@@ -30,9 +50,7 @@ int main()
 	for (int i = 0; i < MYSTRINGLEN; ++i)
 	{
 		cout << input[i];
-	}
-
-	
+	}*/	
 
     return 0;
 }
@@ -52,7 +70,7 @@ char Encrypt(char c, int offset)
 	//subtract 97 and re-insert
 	else if (islower(c))
 	{
-		c = (c - 97 + offset) % 26 + 97;
+		c = ((c - 97) + offset % 26) + 97;
 	}
 	else
 	{
@@ -65,5 +83,24 @@ char Encrypt(char c, int offset)
 
 char Decrypt(char c, int offset)
 {
-	return 'c';
+	//-65
+	if (isupper(c))
+	{
+		c = c-65 + ((26-offset) % 26) + 65;
+		//c = c - 65;
+		//c = (c - (26 - offset)) % 26;
+		//c = c +65;
+	}
+	//-97
+	else if (islower(c))
+	{
+		c = c - 97 + (26 -offset % 26) + 97;
+	}
+	else
+	{
+		cout << "char used in Decrypt method is not a char\n";
+		exit(1);
+	}
+
+	return c;
 }
