@@ -13,15 +13,23 @@ char Decrypt(char c, int offset);
 void ProcessPlaintext(int shift);
 void Encryption(int charCount, char textArray[], int shift);
 
+void ProcessCiphertext(int shift);
+void Decryption(int charCount, char textArray[], int shift);
+
+
 int main()
 {
 	char choice;
-	char key[255]; //one or two digit key
+	char key[255]; //one or two digit key;
 	int shift = 0;
 	bool run = true;
 
 	while (run)
 	{
+		// Empty out key arr buffer every loop ? (use memset)
+		// http://stackoverflow.com/questions/632846/clearing-a-char-array-c
+		// Clear choice buffer
+
 		cout << "Please select from the following options: " << endl
 			<< "[A]  Encrypt with a key" << endl
 			<< "[B]  Decrypt with a key" << endl
@@ -42,8 +50,13 @@ int main()
 		}
 		else if (choice == 'B')
 		{
-
-
+			cout << "-Decryption with a key-" << endl << "Please enter your key (0-25): ";
+			cin >> key;
+			Offset offset = Offset(key);
+			shift = offset.GetOffset();
+			// cout << "\nThe offset is " << shift << endl;
+			//ProcessPlaintext(shift);
+			ProcessCiphertext(shift);
 		}
 		else if (choice == 'C')
 		{
@@ -158,9 +171,93 @@ void Encryption(int charCount, char textArray[], int shift)
 	cout << endl;
 }
 
+void ProcessCiphertext(int shift)
+{
+	// global variable??
+	const int arraySize = 10000;
+	char textArray[arraySize] = { 0 };
 
+	char currChar;
+	int charCount = 0; // number of characters in the file
+	int i = 0;
 
+	ifstream inFile; 
+	//string fileName;
 
+	// Prompt for file name (cipher text ...) to be (decrypted ...) 
+	// Text file name is in (Debug) folder within exe
+	//cout << "Please enter the text file name: ";
+	//cin >> fileName;
+	//inFile.open(fileName.c_str());
+
+	inFile.open("cipher.txt", ios::in); // open the file to be read
+
+	if (inFile.is_open())
+	{
+		//string contents((std::istreambuf_iterator<char>(inFile)), std::istreambuf_iterator<char>());
+		//contents.c_str();
+
+		// Store the text from the input file to textArray[]
+		while (!inFile.eof())
+		{
+			inFile.get(textArray[i]);
+			//cout << textArray[i];
+			//textArray[i] = tolower(textArray[i]); //converts all uppercase letters to lowercase
+			charCount = i++;
+		}
+		inFile.close();
+
+		//cout << charCount << "characters successfully read." << endl;
+
+		// Show the contents of the text to console
+		cout << "Cipher Message: " << endl;
+		for (int i = 0; i <= charCount; i++)
+		{
+			cout << textArray[i];
+		}
+		cout << endl << endl;
+
+		Decryption(charCount, textArray, shift);
+	}
+	else
+	{
+		cout << "\nCannot open file!\n";
+	}
+
+	//inFile.close();
+}
+
+void Decryption(int charCount, char textArray[], int shift)
+//void decipher(int allCharCounter, int encryptedText[], int shift, char newLetter)
+{
+	//const int arraySize = 10000;
+	//int enryptedText[arraySize] = {0};
+
+	// Loop until it reaches the very last character at the end of file
+	for (int i = 0; i < charCount; i++)
+	{
+		// Check if it is within the range of lowercase ASCII (a - z : 97 - 122)
+		// if (textArray[i] > 96 && textArray[i] < 123)
+		if (islower(textArray[i]))
+		{
+			textArray[i] = (char)(((textArray[i] - 'a' - shift + 26) % 26) + 'a');
+		}
+		// Check if it is within the range of uppercase ASCII (A - Z : 65 - 90)
+		// else if (encryptedText[i] > 64 && encryptedText[i] < 91)
+		else if (isupper(textArray[i]))
+		{
+			textArray[i] = (char)(((textArray[i] - 'A' - shift + 26) % 26) + 'A');
+		}
+		// Characters other than uppercase and lowercase letters stay the same
+
+		cout << textArray[i]; // Print to the screen the encoded characters
+		// put each character to an output text file called encrypted.txt
+	}
+
+	// cout << "Decryption successful. File saved as << ??? << "." << "\nReturning to main menu." << endl << endl;
+
+	cout << endl;
+}
 
 
 /*
