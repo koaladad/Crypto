@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <sstream>
 #include "offset.h"
 using namespace std;
 
@@ -15,6 +16,13 @@ void Encryption(int charCount, char textArray[], int shift);
 
 void ProcessCiphertext(int shift);
 void Decryption(int charCount, char textArray[], int shift);
+
+void DecryptCiphertext();
+char EncryptChar(char c, int shift);
+char DecryptChar(char c, int shift);
+
+vector<string> &split(const string &s, char delim, vector<string> &elems);
+vector<string> split(const string &s, char delim);
 
 
 int main()
@@ -60,8 +68,10 @@ int main()
 		}
 		else if (choice == 'C')
 		{
-
-
+			//ProcessCiphertext(0); //load ciphertext to textArray
+			DecryptCiphertext();
+			//finds most commonly occurring letters, top 10 will be checked top down, assuming 'e' as root offset
+			//needs a dictionary.txt to scour through on each word
 		}
 		else if (choice == 'D')
 		{
@@ -87,7 +97,7 @@ void ProcessPlaintext(int shift)
 	const int arraySize = 10000;
 	char textArray[arraySize] = {0};
 
-	char currChar;
+	//char currChar;
 	int charCount = 0; // number of characters in the file
 	int i = 0;
 
@@ -139,6 +149,41 @@ void ProcessPlaintext(int shift)
 	//inFile.close();
 }
 
+char EncryptChar(char c, int shift)
+{
+	// Check if it is within the range of lowercase ASCII (a - z : 97 - 122)
+	// if (textArray[i] > 96 && textArray[i] < 123)
+	if (islower(c))
+	{
+		c = (char)(((c - 'a' + shift + 26) % 26) + 'a');
+	}
+	// Check if it is within the range of uppercase ASCII (A - Z : 65 - 90)
+	// else if (encryptedText[i] > 64 && encryptedText[i] < 91)
+	else if (isupper(c))
+	{
+		c = (char)(((c - 'A' + shift + 26) % 26) + 'A');
+	}
+	return c;
+}
+
+char DecryptChar(char c, int shift)
+{
+	// Check if it is within the range of lowercase ASCII (a - z : 97 - 122)
+	// if (textArray[i] > 96 && textArray[i] < 123)
+	if (islower(c))
+	{
+		c = (char)(((c - 'a' - shift + 26) % 26) + 'a');
+	}
+	// Check if it is within the range of uppercase ASCII (A - Z : 65 - 90)
+	// else if (encryptedText[i] > 64 && encryptedText[i] < 91)
+	else if (isupper(c))
+	{
+		c = (char)(((c - 'A' - shift + 26) % 26) + 'A');
+	}
+	// Characters other than uppercase and lowercase letters stay the same
+	return c;
+}
+
 void Encryption(int charCount, char textArray[], int shift)
 //void decipher(int allCharCounter, int encryptedText[], int shift, char newLetter)
 {
@@ -177,7 +222,7 @@ void ProcessCiphertext(int shift)
 	const int arraySize = 10000;
 	char textArray[arraySize] = { 0 };
 
-	char currChar;
+	//char currChar;
 	int charCount = 0; // number of characters in the file
 	int i = 0;
 
@@ -230,6 +275,7 @@ void ProcessCiphertext(int shift)
 void Decryption(int charCount, char textArray[], int shift)
 //void decipher(int allCharCounter, int encryptedText[], int shift, char newLetter)
 {
+
 	//const int arraySize = 10000;
 	//int enryptedText[arraySize] = {0};
 
@@ -259,6 +305,161 @@ void Decryption(int charCount, char textArray[], int shift)
 	cout << endl;
 }
 
+//performs cryptanalysis on ciphertext
+void DecryptCiphertext()
+{
+	//Load textArray with ciphertext.txt
+	// global variable??
+	const int arraySize = 10000;
+	char textArray[arraySize] = { 0 };
+
+	int charCount = 0; // number of characters in the file
+	int i = 0;
+
+	ifstream inFile;
+	//string fileName;
+
+	// Prompt for file name (cipher text ...) to be (decrypted ...) 
+	// Text file name is in (Debug) folder within exe
+	//cout << "Please enter the text file name: ";
+	//cin >> fileName;
+	//inFile.open(fileName.c_str());
+
+	inFile.open("cipher.txt", ios::in); // open the file to be read
+
+	if (inFile.is_open())
+	{
+		//string contents((std::istreambuf_iterator<char>(inFile)), std::istreambuf_iterator<char>());
+		//contents.c_str();
+
+		// Store the text from the input file to textArray[]
+		while (!inFile.eof())
+		{
+			inFile.get(textArray[i]);
+			//cout << textArray[i];
+			//textArray[i] = tolower(textArray[i]); //converts all uppercase letters to lowercase
+			charCount = i++;
+		}
+		inFile.close();
+
+		//cout << charCount << "characters successfully read." << endl;
+
+		// Show the contents of the text to console
+		//cout << "Cipher Message: " << endl;
+		for (int i = 0; i <= charCount; i++)
+		{
+			//cout << textArray[i];
+		}
+		//cout << endl << endl;
+
+		//Decryption(charCount, textArray, 0);
+	}
+	else
+	{
+		cout << "\nCannot open file!\n";
+	}
+
+	//Create an int array and initialize all elements to 0
+	int wordCount[26] = { 0 };
+
+	//load dictionary vector
+	ifstream dict("dictionary.txt");
+
+	if (!dict) //test the file is open
+	{
+		cout << "Error opening dictionary text file (""dictionary.txt"")" << endl;
+		system("pause");
+		return;
+	}
+
+	string line;
+	vector<string> dictionaryVec;
+
+	cout << "Loading Dictionary..." << endl;
+	while (std::getline(dict, line))
+	{
+		dictionaryVec.push_back(line);
+	}
+	cout << "Finished Loading Dictionary..." << endl;
+
+	cout << "Searching Each Word in Dictionary..." << endl;
+	//iterate through each offset score
+	for (int offset = 0; offset < 26; offset++)
+	{
+		//copy textArray to string
+		string str(textArray);
+
+		//break string into space-separated words
+		//place each word into a vector
+		vector<string> textVec;
+		textVec = split(str, ' ');
+
+		cout << "Checking Offset: " << offset;
+		//cout << textVec[0] << " " << textVec[1] << endl;
+		//check each 'word' for a dictionary match
+		//for each match, increment wordCount[offset];
+		for (auto word : textVec)
+		{
+			//encrypt word using EncryptChar function
+			string encryptedWord = word;
+			
+			for (char& c : encryptedWord)
+			{
+				c = DecryptChar(c, offset);
+			}
+			
+			//cout << "NEW WORD: " << encryptedWord << endl;
+			cout << ".";
+			//if match found, increment wordCount[offset]
+			if (std::find(dictionaryVec.begin(), dictionaryVec.end(),encryptedWord) != dictionaryVec.end())
+			{
+				wordCount[offset] += 1;
+			}
+		}
+		cout << endl;
+		//cout << "Matches found: " << wordCount[offset] << endl;
+	}
+
+	//get index of max value in wordCount array. That is the Decrypt Offset
+	int number = 0;
+	int max = wordCount[0];
+
+	for (int j = 1; j < 26; j++)
+	{
+		if (max < wordCount[j])
+		{
+			max = wordCount[j];
+			number = j;
+		}
+	}
+
+	//Display the decrypted message and Decrypted Offset
+	cout << "Predicted Decryption Shift is " << number << endl;
+
+	cout << "Decrypted Message Below..." << endl;
+
+	// cout << "\nThe offset is " << shift << endl;
+	//ProcessPlaintext(shift);
+	ProcessCiphertext(number);
+
+
+}
+
+vector<string> &split(const string &s, char delim, vector<string> &elems) {
+	stringstream ss(s);
+	string item;
+	while (getline(ss, item, delim)) {
+		elems.push_back(item);
+	}
+	return elems;
+}
+
+
+vector<string> split(const string &s, char delim) {
+	vector<string> elems;
+	split(s, delim, elems);
+	return elems;
+}
 
 /*
 a-z: 97 to 122
