@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <Windows.h>
 #include "offset.h"
 using namespace std;
 
@@ -21,12 +22,16 @@ void DecryptCiphertext();
 char EncryptChar(char c, int shift);
 char DecryptChar(char c, int shift);
 
+void PrintText(char textArray[]);
+
 vector<string> &split(const string &s, char delim, vector<string> &elems);
 vector<string> split(const string &s, char delim);
 
  
 int main()
 {
+	SetConsoleTitle(TEXT("The Caesar Cryptographer"));
+
 	char choice[255];
 	char key[255]; //one or two digit key;
 	int shift = 0;
@@ -34,17 +39,14 @@ int main()
 
 	while (run)
 	{
-		
-		// Empty out key arr buffer every loop ? (use memset)
-		// http://stackoverflow.com/questions/632846/clearing-a-char-array-c
-		// Clear choice buffer
 
-
-		cout << "Please select from the following options: " << endl
-			<< "[A]  Encrypt with a key" << endl
-			<< "[B]  Decrypt with a key" << endl
-			<< "[C]  Decrypt without a key" << endl
-			<< "[D]  Abort" << endl << endl;
+		cout << "******************************************" << endl
+			 << "Please select from the following options: " << endl
+			 << "[A]  Encrypt with a key" << endl
+			 << "[B]  Decrypt with a key" << endl
+			 << "[C]  Decrypt without a key" << endl
+			 << "[D]  Abort" << endl
+			 << "******************************************" << endl;
 		cin >> choice;
 		choice[0] = toupper(choice[0]);
 		cout << endl;
@@ -88,8 +90,6 @@ int main()
 		memset(&key[0], 0, sizeof(key));
 		memset(&key[0], 0, sizeof(choice));
 	}
-
-
 
 	//getchar();
 	getchar();
@@ -137,21 +137,20 @@ void ProcessPlaintext(int shift)
 			charCount = i++;
 		}
 		inFile.close();
-		
+		cout << endl << endl;
 
 		//cout << charCount << "characters successfully read." << endl;
 
 		// Show the contents of the text to console
-		cout << "Plaintext Message: " << endl;
-		for (int i = 0; i <= charCount; i++)
-		{
-			cout << textArray[i];
-		}
-		cout << endl << endl;
+		//cout << "Plaintext Message: " << endl;
+		//for (int i = 0; i <= charCount; i++)
+		//{
+		//	cout << textArray[i];
+		//}
+		cout << "Original Message: " << endl;
+		PrintText(textArray);
 
 		Encryption(charCount, textArray, shift);
-		// void Encryption(int charCounter, int textArray[], int shift)
-		//encrypt(charCount, encryptedText, shift, newLetter);
 	}
 	else
 	{
@@ -202,12 +201,13 @@ void ProcessCiphertext(int shift)
 		//cout << charCount << "characters successfully read." << endl;
 
 		// Show the contents of the text to console
-		cout << "Cipher Message: " << endl;
-		for (int i = 0; i <= charCount; i++)
-		{
-			cout << textArray[i];
-		}
-		cout << endl << endl;
+		//cout << "Cipher Message: " << endl;
+		//for (int i = 0; i <= charCount; i++)
+		//{
+		//	cout << textArray[i];
+		//}
+		cout << "Original Message: " << endl;
+		PrintText(textArray);
 
 		Decryption(charCount, textArray, shift);
 	}
@@ -222,13 +222,12 @@ void ProcessCiphertext(int shift)
 // Encryption with a key
 void Encryption(int charCount, char textArray[], int shift)
 {
-	cout << "Processing..." << endl;
-
 	string fileName;
 	cout << "Please enter an output file name <destination_file_name.txt>: ";
 	cin >> fileName;
 	cout << endl << endl;
-
+	cout << "Processing..." << endl << endl;
+	Sleep(100);
 	cout << "Encrypted Message: " << endl;
 	// Loop until it reaches the very last character at the end of file
 	for (int i = 0; i < charCount; i++)
@@ -248,10 +247,9 @@ void Encryption(int charCount, char textArray[], int shift)
 		// Characters other than uppercase and lowercase letters stay the same
 		
 		// Print to the screen the encoded characters
-		cout << textArray[i]; 
+		//cout << textArray[i]; 
 	}
-
-	cout << endl << endl;
+	PrintText(textArray);
 
 	ofstream ofs;
 	ofs.open(fileName.c_str(), ios::out);
@@ -267,7 +265,7 @@ void Encryption(int charCount, char textArray[], int shift)
 	//}
 	ofs.close();
 
-	cout << endl;
+	cout << endl << endl;
 }
 
 
@@ -275,13 +273,13 @@ void Encryption(int charCount, char textArray[], int shift)
 void Decryption(int charCount, char textArray[], int shift)
 //void decipher(int allCharCounter, int encryptedText[], int shift, char newLetter)
 {
-	cout << "Processing..." << endl;
 	
 	string fileName;
 	cout << "Please enter an output file name <destination_file_name.txt>: ";
 	cin >> fileName;
 	cout << endl << endl;
-
+	cout << "Processing..." << endl << endl;
+	Sleep(100);
 	cout << "Decrypted Message: " << endl;
 	// Loop until it reaches the very last character at the end of file
 	for (int i = 0; i < charCount; i++)
@@ -301,9 +299,9 @@ void Decryption(int charCount, char textArray[], int shift)
 		// Characters other than uppercase and lowercase letters stay the same
 
 		// Print to the screen the encoded characters
-		cout << textArray[i]; 
+		//cout << textArray[i]; 
 	}
-	cout << endl << endl;
+	PrintText(textArray);
 
 	ofstream ofs;
 	ofs.open(fileName.c_str(), ios::out);
@@ -319,7 +317,7 @@ void Decryption(int charCount, char textArray[], int shift)
 	//}
 	ofs.close();
 
-	cout << endl;
+	cout << endl << endl;
 }
 
 
@@ -468,6 +466,26 @@ void DecryptCiphertext()
 	Decryption(charCount, textArray, number);
 }
 
+void PrintText(char textArray[])
+{
+	int x = 0;
+	while (textArray[x] != '\0')
+	{
+		cout << textArray[x];
+
+		if (textArray[x] != ' ' && textArray[x] != '\n')
+		{
+			Beep(700, 30);
+		}
+
+		Sleep(30);
+		x++;
+	}
+	cout << "\n\nEnd of message..." << endl << endl << endl;
+}
+
+
+
 char EncryptChar(char c, int shift)
 {
 	// Check if it is within the range of lowercase ASCII (a - z : 97 - 122)
@@ -502,6 +520,7 @@ char DecryptChar(char c, int shift)
 	// Characters other than uppercase and lowercase letters stay the same
 	return c;
 }
+
 
 vector<string> &split(const string &s, char delim, vector<string> &elems) {
 	stringstream ss(s);
