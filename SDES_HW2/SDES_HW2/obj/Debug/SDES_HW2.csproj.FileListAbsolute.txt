@@ -1,0 +1,6 @@
+E:\MyStuff\Docs\Visual Studio 2015\Projects\Crypto\SDES_HW2\SDES_HW2\bin\Debug\SDES_HW2.exe.config
+E:\MyStuff\Docs\Visual Studio 2015\Projects\Crypto\SDES_HW2\SDES_HW2\bin\Debug\SDES_HW2.exe
+E:\MyStuff\Docs\Visual Studio 2015\Projects\Crypto\SDES_HW2\SDES_HW2\bin\Debug\SDES_HW2.pdb
+E:\MyStuff\Docs\Visual Studio 2015\Projects\Crypto\SDES_HW2\SDES_HW2\obj\Debug\SDES_HW2.csprojResolveAssemblyReference.cache
+E:\MyStuff\Docs\Visual Studio 2015\Projects\Crypto\SDES_HW2\SDES_HW2\obj\Debug\SDES_HW2.exe
+E:\MyStuff\Docs\Visual Studio 2015\Projects\Crypto\SDES_HW2\SDES_HW2\obj\Debug\SDES_HW2.pdb
