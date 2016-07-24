@@ -10,7 +10,9 @@ namespace SDES_HW2
     {
         static void Main(string[] args)
         {
-            byte[] x = {1, 0, 0, 0 ,0,0,0,1};
+            // Restructure main menu
+
+            byte[] x = { 1, 0, 1, 1, 1, 1, 0, 1 }; // use for plain text
             string s = "00000010";
             byte[] y = StringToByte(s);
 
@@ -28,12 +30,113 @@ namespace SDES_HW2
             PrintIntArray(keyArr);
 
             //Generate SDES key
-            GenerateSDESKey(keyArr);
+            int[] combinedSubkeys = new int[(sizeof(long))*2];
+            combinedSubkeys = GenerateSDESKey(keyArr); // 
+
+            // Divide combinedSubkeys.Length into half
+            // each subkey is sizeof(long) 8 bits long
+            int[] firstSubkey = new int[8];
+            int[] secondSubkey = new int[8];
+            for (int i = 0; i < (combinedSubkeys.Length / 2); i++)
+            {
+                firstSubkey[i] = combinedSubkeys[i];
+                secondSubkey[i] = combinedSubkeys[8 + i];
+            }
+            // Do something with subkeys, or pass both arrays as encryption params <-- used in FK function
+
+            // To Encrypt
+            byte[] cipherText = EncryptionSDES(x);
+            PrintByte(cipherText);
+
+
 
             Console.ReadLine();
         }
 
-        public static void GenerateSDESKey(int[] keyArr)
+        public static byte[] EncryptionSDES(byte[] plainText)
+        {
+            // Step 1: IP() Initial Permutation (Put in a separate function)
+            //      [k0][k1][k2][k3][k4][k5][k6][k7]
+            //      [ 1][ 0][ 1][ 1][ 1][ 1][ 0][ 1]
+            // IP:  [k1][k5][k2][k0][k3][k7][k4][k6]
+            //      [ 0][ 1][ 1][ 1][ 1][ 1][ 1][ 0]
+            byte[] newPlainArr = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+            newPlainArr[0] = plainText[1];
+            newPlainArr[1] = plainText[5];
+            newPlainArr[2] = plainText[2];
+            newPlainArr[3] = plainText[0];
+            newPlainArr[4] = plainText[3];
+            newPlainArr[5] = plainText[7];
+            newPlainArr[6] = plainText[4];
+            newPlainArr[7] = plainText[6];
+
+
+            int[] leftHalf = new int[] { 0, 0, 0, 0 };
+            int[] rightHalf = new int[] { 0, 0, 0, 0 }; // <-- Fk Right
+            for (int i = 0; i < (newPlainArr.Length / 2); i++)
+            {
+                leftHalf[i] = newPlainArr[i];
+                rightHalf[i] = newPlainArr[4 + i];
+            }
+
+            // Step 2: Complex function FK()
+            // Permutation + Substitution
+            // --depends on a key input
+            // (put in a separate function)
+            // Input: 8-bit new newPlainArr[] or
+            // leftHalf[],           rightHalf[]
+            // [ 0][ 1][ 1][ 1]     [ 1][ 1][ 1][ 0]
+            // Ouput: P4() = [f1][f3][f2][f0] <---Fk Left
+
+            // byte[] leftHalf = FK(leftHalf); // function call to fk
+            
+
+            // Step 3: SW() Simple Permutation Function (put in a separate function)
+            // --switches the two halves of the data
+            // swap leftHalf and rightHalf
+            // [0][1][1][1]     [1][1][1][0]
+            // [1][1][1][0]     [0][1][1][1]
+            for(int i = 0; i < leftHalf.Length; i++)
+            {
+                int temp = leftHalf[i]; 
+                leftHalf[i] = rightHalf[i];
+                rightHalf[i] = temp;
+            }
+
+            // Step 4: Complex function FK()
+            // Input: 8-bit new newPlainArr[] or
+            // leftHalf[],       rightHalf[]
+            // [1][1][1][0]      [0][1][1][1]
+            // Ouput: P4() = [f1][f3][f2][f0] <---Fk Left
+           
+            // byte[] leftHalf = FK(leftHalf); // function call to fk
+            // rightHalf is still [0][1][1][1]
+            // newPlainArr = leftHalf[] + rightHalf[];
+            for (int i = 0; i < (newPlainArr.Length/2); i++)
+            {
+                newPlainArr[i] = (byte)leftHalf[i];
+                newPlainArr[4 + i] = (byte)rightHalf[i];
+            }
+            
+            // Step 5: IPInverse() -- Final Permutation Function
+            // ex:   [k0][k1][k2][k3][k4][k5][k6][k7]
+            //       [ 1][ 1][ 1][ 0][ 0][ 1][ 1][ 1]
+            // IP-1: [k3][k0][k2][k4][k6][k1][k7][k5]
+            //       [ 0][ 1][ 1][ 0][ 1][ 1][ 1][ 1]
+            byte[] cipherArr = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+            cipherArr[0] = newPlainArr[3];
+            cipherArr[1] = newPlainArr[0];
+            cipherArr[2] = newPlainArr[2];
+            cipherArr[3] = newPlainArr[4];
+            cipherArr[4] = newPlainArr[6];
+            cipherArr[5] = newPlainArr[1];
+            cipherArr[6] = newPlainArr[7];
+            cipherArr[7] = newPlainArr[5];
+
+            return cipherArr;
+        }
+
+        public static int[] GenerateSDESKey(int[] keyArr)
         {
 
             // keyArr[] : 10-bit key
@@ -57,6 +160,7 @@ namespace SDES_HW2
             newKeyArr[7] = keyArr[8];
             newKeyArr[8] = keyArr[7];
             newKeyArr[9] = keyArr[5];
+
 
             //PrintIntArray(newKeyArr);
 
@@ -82,7 +186,7 @@ namespace SDES_HW2
             // Step 3: Permute P8
             //      [ 0][ 0][ 0][ 0][ 1][ 1][ 1][ 0][ 0][ 0]
             //      [k0][k1][k2][k3][k4][k5][k6][k7][k8][k9]
-            // Subkey 1:
+            // Subkey 1 (Global Var)?
             //      [k5][k2][k6][k3][k7][k4][k9][k8]
             //      [ 1][ 0][ 1][ 0][ 0][ 1][ 0][ 0]
             int[] firstSubkey = new int[] { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -114,7 +218,7 @@ namespace SDES_HW2
             // Step 5: Permute P8
             //      [ 0][ 0][ 1][ 0][ 0][ 0][ 0][ 0][ 1][ 1]
             //      [k0][k1][k2][k3][k4][k5][k6][k7][k8][k9]
-            // Subkey 2:
+            // Subkey 2 (Global Var)
             //      [k5][k2][k6][k3][k7][k4][k9][k8]
             //      [ 0][ 1][ 0][ 0][ 0][ 0][ 1][ 1]
             int[] secondSubkey = new int[] { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -126,6 +230,16 @@ namespace SDES_HW2
             secondSubkey[5] = newKeyArr[4];
             secondSubkey[6] = newKeyArr[9];
             secondSubkey[7] = newKeyArr[8];
+
+            // combine 8-bit firstSubkey[] + 8-bit secondSubkey[] = 16-bit int[] combined subkeys
+            int[] combinedSubkeys = new int[firstSubkey.Length + secondSubkey.Length];
+            for (int i = 0; i < (combinedSubkeys.Length / 2); i++)
+            {
+                combinedSubkeys[i] = (byte)firstSubkey[i];
+                combinedSubkeys[firstSubkey.Length + i] = (byte)secondSubkey[i];
+            }
+            // return int[] combinedSubkeys (divide combinedSubkeys.Length / 2 in the caller)
+            return combinedSubkeys;
         }
 
                                                                         //Byte & String Manipulation functions
