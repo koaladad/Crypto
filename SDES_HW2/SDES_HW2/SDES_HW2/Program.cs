@@ -10,133 +10,170 @@ namespace SDES_HW2
     {
         static void Main(string[] args)
         {
-            // Restructure main menu
+            Console.WriteLine("\nMake a selection:");
+            Console.WriteLine("1. Encrypt");
+            Console.WriteLine("2. Decrypt");
+            Console.WriteLine("3. Quit");
+            bool keepGoing = true;
+            string selection = Console.ReadLine();
 
-            byte[] x = { 1, 0, 1, 1, 1, 1, 0, 1 }; // use for plain text
-            string s = "00000010";
-            byte[] y = StringToByte(s);
+            while (keepGoing)
+            {
+                switch (selection)
+                {
+                    case "1":
+                        //encryption happens here
+                        Console.WriteLine("\n***Encryption***");
+                        int[] eightBitInput = GetInput(8);
+                        int[] tenBitKey = GetInput(10);
+                        //you now have 8-bit input and key to work with
 
-            PrintByte(x);
-            PrintByte(y);
+                        //Generate SDES keys
+                        int[] firstKey = GenerateSDESKey(tenBitKey, "keyone");
+                        int[] secondKey = GenerateSDESKey(tenBitKey, "keytwo");
+
+                        Console.WriteLine("1st key");
+                        PrintIntArray(firstKey);
+                        Console.WriteLine("2nd key");
+                        PrintIntArray(secondKey);
+
+                        Console.WriteLine("\nMake a selection:");
+                        Console.WriteLine("1. Encrypt");
+                        Console.WriteLine("2. Decrypt");
+                        Console.WriteLine("3. Quit");
+                        selection = Console.ReadLine();
+
+                        break;
+
+                    case "2":
+                        //decryption happens here
+                        Console.WriteLine("\nDecryption");
+
+                        Console.WriteLine("\nMake a selection:");
+                        Console.WriteLine("1. Encrypt");
+                        Console.WriteLine("2. Decrypt");
+                        Console.WriteLine("3. Quit");
+                        selection = Console.ReadLine();
+
+                        break;
+
+                    case "3":
+                        keepGoing = false;
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid, please enter number 1-3");
+                        selection = Console.ReadLine();
+                        break;
 
 
-            string key = "1010000010";
-            int[] keyArr = StringToKeyArr(key);
+                }
+            }
+            //
+
+            //byte[] x = {1, 0, 0, 0 ,0,0,0,1};
+            //string s = "00000010";
+            //byte[] y = StringToByte(s);
+
+            //PrintByte(x);
+            //PrintByte(y);
+
+
+            //string key = "1010000010";
+            //int[] keyArr = StringToKeyArr(key);
 
             //if keyArr elements returned contains all zeros
             // prompt user to re-enter 10-bit binary key
             // call StringToKeyArr() again
 
-            PrintIntArray(keyArr);
+            //Console.Write("initial key array = ");
+            //PrintIntArray(keyArr);
 
             //Generate SDES key
-            int[] combinedSubkeys = new int[(sizeof(long))*2];
-            combinedSubkeys = GenerateSDESKey(keyArr); // 
+            //int[] keyone = GenerateSDESKey(keyArr,"keyone");
+            //int[] keytwo = GenerateSDESKey(keyArr, "keytwo");
 
-            // Divide combinedSubkeys.Length into half
-            // each subkey is sizeof(long) 8 bits long
-            int[] firstSubkey = new int[8];
-            int[] secondSubkey = new int[8];
-            for (int i = 0; i < (combinedSubkeys.Length / 2); i++)
-            {
-                firstSubkey[i] = combinedSubkeys[i];
-                secondSubkey[i] = combinedSubkeys[8 + i];
-            }
-            // Do something with subkeys, or pass both arrays as encryption params <-- used in FK function
-
-            // To Encrypt
-            byte[] cipherText = EncryptionSDES(x);
-            PrintByte(cipherText);
-
-
-
-            Console.ReadLine();
+            //Console.ReadLine();
         }
 
-        public static byte[] EncryptionSDES(byte[] plainText)
+        //This function prompts user for <REQUIREDLENGTH:INPUT>-bit input key, validates, and returns 8-bit byte array. If fails, returns an empty byte array of all 0's
+        private static int[] GetInput(int requiredLength)
         {
-            // Step 1: IP() Initial Permutation (Put in a separate function)
-            //      [k0][k1][k2][k3][k4][k5][k6][k7]
-            //      [ 1][ 0][ 1][ 1][ 1][ 1][ 0][ 1]
-            // IP:  [k1][k5][k2][k0][k3][k7][k4][k6]
-            //      [ 0][ 1][ 1][ 1][ 1][ 1][ 1][ 0]
-            byte[] newPlainArr = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
-            newPlainArr[0] = plainText[1];
-            newPlainArr[1] = plainText[5];
-            newPlainArr[2] = plainText[2];
-            newPlainArr[3] = plainText[0];
-            newPlainArr[4] = plainText[3];
-            newPlainArr[5] = plainText[7];
-            newPlainArr[6] = plainText[4];
-            newPlainArr[7] = plainText[6];
+            bool inputValid = false;
+            string str = "";
 
-
-            int[] leftHalf = new int[] { 0, 0, 0, 0 };
-            int[] rightHalf = new int[] { 0, 0, 0, 0 }; // <-- Fk Right
-            for (int i = 0; i < (newPlainArr.Length / 2); i++)
+            while (!inputValid)
             {
-                leftHalf[i] = newPlainArr[i];
-                rightHalf[i] = newPlainArr[4 + i];
+                if (requiredLength == 8)
+                {
+                    Console.WriteLine("Enter 8-bit input of 0's and 1's");
+                }
+                else if (requiredLength == 10)
+                {
+                    Console.WriteLine("Enter 10-bit input key of 0's and 1's");
+                }
+                else
+                {
+                    Console.WriteLine($"Enter {requiredLength}-bit input of 0's and 1's");
+                }
+
+
+                str = Console.ReadLine();
+
+                //confirm string is only numeric
+                int n;
+                bool isNumeric = int.TryParse(str, out n);
+
+                while (!isNumeric || str.Length != requiredLength)
+                {
+                    Console.WriteLine($"Can only enter numeric 0's and 1's, must be {requiredLength}-bits only");
+                    Console.WriteLine("Re-enter input, or q to quit");
+                    str = Console.ReadLine();
+                    if (str == "q")
+                        break;
+
+                    isNumeric = int.TryParse(str, out n);
+                }
+                if (str == "q") break; //break if q was pressed
+
+
+                if (requiredLength == 8)
+                {
+                    byte[] byteArray = StringToByte(str);
+
+                    if (ValidateByteArray(byteArray))
+                    {
+                        return (StringToByteInt(str));
+                    }
+                    else
+                    {
+                        Console.WriteLine("Input invalid -- the string has all numeric characters but it must be only 0's and 1's, please retry");
+                    }
+                }
+                else //10-bit key
+                {
+                    byte[] byteArray = StringToTenBit(str);
+
+                    if (ValidateByteArray(byteArray))
+                    {
+                        return (StringToTenBitInt(str));
+                    }
+                    else
+                    {
+                        Console.WriteLine("Input invalid -- the string has all numeric characters but it must be only 0's and 1's, please retry");
+                    }
+                }
+
+
+
             }
+            Console.WriteLine("Failure in GetInput, returning garbage array");
 
-            // Step 2: Complex function FK()
-            // Permutation + Substitution
-            // --depends on a key input
-            // (put in a separate function)
-            // Input: 8-bit new newPlainArr[] or
-            // leftHalf[],           rightHalf[]
-            // [ 0][ 1][ 1][ 1]     [ 1][ 1][ 1][ 0]
-            // Ouput: P4() = [f1][f3][f2][f0] <---Fk Left
-
-            // byte[] leftHalf = FK(leftHalf); // function call to fk
-            
-
-            // Step 3: SW() Simple Permutation Function (put in a separate function)
-            // --switches the two halves of the data
-            // swap leftHalf and rightHalf
-            // [0][1][1][1]     [1][1][1][0]
-            // [1][1][1][0]     [0][1][1][1]
-            for(int i = 0; i < leftHalf.Length; i++)
-            {
-                int temp = leftHalf[i]; 
-                leftHalf[i] = rightHalf[i];
-                rightHalf[i] = temp;
-            }
-
-            // Step 4: Complex function FK()
-            // Input: 8-bit new newPlainArr[] or
-            // leftHalf[],       rightHalf[]
-            // [1][1][1][0]      [0][1][1][1]
-            // Ouput: P4() = [f1][f3][f2][f0] <---Fk Left
-           
-            // byte[] leftHalf = FK(leftHalf); // function call to fk
-            // rightHalf is still [0][1][1][1]
-            // newPlainArr = leftHalf[] + rightHalf[];
-            for (int i = 0; i < (newPlainArr.Length/2); i++)
-            {
-                newPlainArr[i] = (byte)leftHalf[i];
-                newPlainArr[4 + i] = (byte)rightHalf[i];
-            }
-            
-            // Step 5: IPInverse() -- Final Permutation Function
-            // ex:   [k0][k1][k2][k3][k4][k5][k6][k7]
-            //       [ 1][ 1][ 1][ 0][ 0][ 1][ 1][ 1]
-            // IP-1: [k3][k0][k2][k4][k6][k1][k7][k5]
-            //       [ 0][ 1][ 1][ 0][ 1][ 1][ 1][ 1]
-            byte[] cipherArr = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
-            cipherArr[0] = newPlainArr[3];
-            cipherArr[1] = newPlainArr[0];
-            cipherArr[2] = newPlainArr[2];
-            cipherArr[3] = newPlainArr[4];
-            cipherArr[4] = newPlainArr[6];
-            cipherArr[5] = newPlainArr[1];
-            cipherArr[6] = newPlainArr[7];
-            cipherArr[7] = newPlainArr[5];
-
-            return cipherArr;
+            int[] crapArray = { 0, 0, 0, 0, 0, 0, 0, 0 };
+            return crapArray;
         }
 
-        public static int[] GenerateSDESKey(int[] keyArr)
+        public static int[] GenerateSDESKey(int[] keyArr, string returnRequest)
         {
 
             // keyArr[] : 10-bit key
@@ -161,7 +198,6 @@ namespace SDES_HW2
             newKeyArr[8] = keyArr[7];
             newKeyArr[9] = keyArr[5];
 
-
             //PrintIntArray(newKeyArr);
 
             // Step 2: Circular left shift LS-1
@@ -171,7 +207,7 @@ namespace SDES_HW2
             int shift = 1;
             int[] firstHalf = new int[] { 0, 0, 0, 0, 0 };
             int[] secondHalf = new int[] { 0, 0, 0, 0, 0 };
-            for (int i = 0; i < (newKeyArr.Length/2); i++)
+            for (int i = 0; i < (newKeyArr.Length / 2); i++)
             {
                 firstHalf[i] = newKeyArr[i];
                 secondHalf[i] = newKeyArr[5 + i];
@@ -186,7 +222,7 @@ namespace SDES_HW2
             // Step 3: Permute P8
             //      [ 0][ 0][ 0][ 0][ 1][ 1][ 1][ 0][ 0][ 0]
             //      [k0][k1][k2][k3][k4][k5][k6][k7][k8][k9]
-            // Subkey 1 (Global Var)?
+            // Subkey 1:
             //      [k5][k2][k6][k3][k7][k4][k9][k8]
             //      [ 1][ 0][ 1][ 0][ 0][ 1][ 0][ 0]
             int[] firstSubkey = new int[] { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -198,6 +234,11 @@ namespace SDES_HW2
             firstSubkey[5] = newKeyArr[4];
             firstSubkey[6] = newKeyArr[9];
             firstSubkey[7] = newKeyArr[8];
+
+            if (returnRequest == "keyone")
+            {
+                return firstSubkey;
+            }
 
             // Step 4: Circular left shift LS-2
             //      [ 0][ 0][ 0][ 0][ 1]    [ 1][ 1][ 0][ 0][ 0]
@@ -218,7 +259,7 @@ namespace SDES_HW2
             // Step 5: Permute P8
             //      [ 0][ 0][ 1][ 0][ 0][ 0][ 0][ 0][ 1][ 1]
             //      [k0][k1][k2][k3][k4][k5][k6][k7][k8][k9]
-            // Subkey 2 (Global Var)
+            // Subkey 2:
             //      [k5][k2][k6][k3][k7][k4][k9][k8]
             //      [ 0][ 1][ 0][ 0][ 0][ 0][ 1][ 1]
             int[] secondSubkey = new int[] { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -231,18 +272,79 @@ namespace SDES_HW2
             secondSubkey[6] = newKeyArr[9];
             secondSubkey[7] = newKeyArr[8];
 
-            // combine 8-bit firstSubkey[] + 8-bit secondSubkey[] = 16-bit int[] combined subkeys
-            int[] combinedSubkeys = new int[firstSubkey.Length + secondSubkey.Length];
-            for (int i = 0; i < (combinedSubkeys.Length / 2); i++)
+            if (returnRequest == "keytwo")
+                return secondSubkey;
+            else
             {
-                combinedSubkeys[i] = (byte)firstSubkey[i];
-                combinedSubkeys[firstSubkey.Length + i] = (byte)secondSubkey[i];
+                Console.WriteLine("Not returning output in GenerateDESKey, returning empty int array here");
+                return new int[] { 0, 0, 0, 0, 0, 0, 0, 0 };
             }
-            // return int[] combinedSubkeys (divide combinedSubkeys.Length / 2 in the caller)
-            return combinedSubkeys;
         }
 
-                                                                        //Byte & String Manipulation functions
+        //IP - InitialPermutation
+        //INPUT: 1 int array, 8-bits long
+        //OUTPUT: a Permuted 8-bit int array
+        //Intial: [0][1][2][3][4][5][6][7]
+        //Becomes:[1][5][2][0][3][7][4][6]
+        public static int[] IP(int[] inputArray)
+        {
+            int[] outputArray = { 0, 0, 0, 0, 0, 0, 0, 0 };
+
+            outputArray[0] = inputArray[3];
+            outputArray[1] = inputArray[0];
+            outputArray[2] = inputArray[2];
+            outputArray[3] = inputArray[4];
+            outputArray[4] = inputArray[6];
+            outputArray[5] = inputArray[1];
+            outputArray[6] = inputArray[7];
+            outputArray[7] = inputArray[5];
+
+            return outputArray;
+        }
+
+        //IPInverse - InitialPermutation^-1
+        //INPUT: 1 int array, 8-bits long
+        //OUTPUT: a Permuted 8-bit int array
+        //Intial: [0][1][2][3][4][5][6][7]
+        //Becomes:[3][0][2][4][6][1][7][5]
+        public static int[] IPInverse(int[] inputArray)
+        {
+            int[] outputArray = { 0, 0, 0, 0, 0, 0, 0, 0 };
+
+            outputArray[0] = inputArray[1];
+            outputArray[1] = inputArray[5];
+            outputArray[2] = inputArray[2];
+            outputArray[3] = inputArray[0];
+            outputArray[4] = inputArray[3];
+            outputArray[5] = inputArray[7];
+            outputArray[6] = inputArray[4];
+            outputArray[7] = inputArray[6];
+
+            return outputArray;
+        }
+
+        //SW - Switch
+        //INPUT: 1 int array, 8-bits long
+        //OUTPUT: a Permuted 8-bit int array
+        //Intial: [0][1][2][3][4][5][6][7]
+        //Becomes:[4][5][6][7][0][1][2][3]
+        public static int[] SW(int[] inputArray)
+        {
+            int[] outputArray = { 0, 0, 0, 0, 0, 0, 0, 0 };
+
+            outputArray[0] = inputArray[4];
+            outputArray[1] = inputArray[5];
+            outputArray[2] = inputArray[6];
+            outputArray[3] = inputArray[7];
+            outputArray[4] = inputArray[0];
+            outputArray[5] = inputArray[1];
+            outputArray[6] = inputArray[2];
+            outputArray[7] = inputArray[3];
+
+            return outputArray;
+        }
+
+        //Byte & String Manipulation functions
         //ByteToString - converts byteArray to string
         public static string ByteToString(byte[] byteArray)
         {
@@ -257,39 +359,10 @@ namespace SDES_HW2
             }
         }
 
-        //StringToByte - converts byte array, 8 bits long, to a string
-        public static byte[] StringToByte(string str)
-        {
-            byte[] byteArray = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
-            
-
-            for (int i=0; i < str.Length; ++i)
-            {
-                if (!str[i].Equals('0') && !str[i].Equals('1'))
-                {
-                    Console.WriteLine("non 0-1 char passed into str, Error, returning empty ByteArray");
-                    return null;
-                }
-                else
-                {
-                    if (str[i] == '1')
-                    {
-                        byteArray[i] = 1;
-                    }
-                    else
-                    {
-                        byteArray[i] = 0;
-                    }
-                }
-            }
-
-            return byteArray;
-        }
-
         //StringToKeyArr - converts string key to int array, 10 bits long
         public static int[] StringToKeyArr(string key)
         {
-            int[] keyArr = new int[] { 0, 0, 0, 0, 0, 0, 0, 0 , 0, 0 };
+            int[] keyArr = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
             if (key.Length == 10)
             {
@@ -369,10 +442,22 @@ namespace SDES_HW2
                     Console.Write("{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}\n", intArr[0], intArr[1], intArr[2], intArr[3], intArr[4], intArr[5], intArr[6], intArr[7], intArr[8], intArr[9]);
                 }
             }
-            //else
-            //{
-            //    Console.WriteLine("Invalid Byte Length, must be 10 bit long");
-            //}
+            else if (intArr.Length == 8)
+            {
+                if (CheckBinaryArr(intArr) == true)
+                {
+                    Console.Write("{0}{1}{2}{3}{4}{5}{6}{7}\n", intArr[0], intArr[1], intArr[2], intArr[3], intArr[4], intArr[5], intArr[6], intArr[7]);
+                }
+                else
+                {
+                    Console.Write("There was an error in validating byte array ");
+                    Console.Write("{0}{1}{2}{3}{4}{5}{6}{7}\n", intArr[0], intArr[1], intArr[2], intArr[3], intArr[4], intArr[5], intArr[6], intArr[7]);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid Byte Length, must be 10 bit long");
+            }
         }
 
         //Checks if the Int array contains only 0's and 1's
@@ -399,6 +484,122 @@ namespace SDES_HW2
                 }
             }
             return true;
+        }
+
+        //StringToByte - converts byte array, 8 bits long, to a string
+        public static byte[] StringToByte(string str)
+        {
+            byte[] byteArray = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+
+
+            for (int i = 0; i < str.Length; ++i)
+            {
+                if (!str[i].Equals('0') && !str[i].Equals('1'))
+                {
+                    Console.WriteLine("non 0-1 char passed into str, Error, returning empty ByteArray");
+                    return byteArray;
+                }
+                else
+                {
+                    if (str[i] == '1')
+                    {
+                        byteArray[i] = 1;
+                    }
+                    else
+                    {
+                        byteArray[i] = 0;
+                    }
+                }
+            }
+
+            return byteArray;
+        }
+
+        //StringToByte - converts byte array, 10 bits long, to a string
+        public static byte[] StringToTenBit(string str)
+        {
+            byte[] byteArray = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+
+            for (int i = 0; i < str.Length; ++i)
+            {
+                if (!str[i].Equals('0') && !str[i].Equals('1'))
+                {
+                    Console.WriteLine("non 0-1 char passed into str, Error, returning empty ByteArray");
+                    return byteArray;
+                }
+                else
+                {
+                    if (str[i] == '1')
+                    {
+                        byteArray[i] = 1;
+                    }
+                    else
+                    {
+                        byteArray[i] = 0;
+                    }
+                }
+            }
+
+            return byteArray;
+        }
+
+        //StringToByte - converts str to 8 bit int array
+        public static int[] StringToByteInt(string str)
+        {
+            int[] intArray = new int[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+
+
+            for (int i = 0; i < str.Length; ++i)
+            {
+                if (!str[i].Equals('0') && !str[i].Equals('1'))
+                {
+                    Console.WriteLine("non 0-1 char passed into str, Error, returning empty intArray");
+                    return intArray;
+                }
+                else
+                {
+                    if (str[i] == '1')
+                    {
+                        intArray[i] = 1;
+                    }
+                    else
+                    {
+                        intArray[i] = 0;
+                    }
+                }
+            }
+
+            return intArray;
+        }
+
+        //StringToByte - converts byte array, 10 bits long, to a string
+        public static int[] StringToTenBitInt(string str)
+        {
+            int[] intArray = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+
+            for (int i = 0; i < str.Length; ++i)
+            {
+                if (!str[i].Equals('0') && !str[i].Equals('1'))
+                {
+                    Console.WriteLine("non 0-1 char passed into str, Error, returning empty intArray");
+                    return intArray;
+                }
+                else
+                {
+                    if (str[i] == '1')
+                    {
+                        intArray[i] = 1;
+                    }
+                    else
+                    {
+                        intArray[i] = 0;
+                    }
+                }
+            }
+
+            return intArray;
         }
     }
 }

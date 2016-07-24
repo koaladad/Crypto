@@ -10,3 +10,9 @@ C:\Users\ndelacru\Desktop\Cryptography\HW 2\Crypto-master\SDES_HW2\SDES_HW2\bin\
 C:\Users\ndelacru\Desktop\Cryptography\HW 2\Crypto-master\SDES_HW2\SDES_HW2\obj\Debug\SDES_HW2.csprojResolveAssemblyReference.cache
 C:\Users\ndelacru\Desktop\Cryptography\HW 2\Crypto-master\SDES_HW2\SDES_HW2\obj\Debug\SDES_HW2.exe
 C:\Users\ndelacru\Desktop\Cryptography\HW 2\Crypto-master\SDES_HW2\SDES_HW2\obj\Debug\SDES_HW2.pdb
+E:\Projects\Crypto\SDES_HW2\SDES_HW2\SDES_HW2\bin\Debug\SDES_HW2.exe.config
+E:\Projects\Crypto\SDES_HW2\SDES_HW2\SDES_HW2\bin\Debug\SDES_HW2.exe
+E:\Projects\Crypto\SDES_HW2\SDES_HW2\SDES_HW2\bin\Debug\SDES_HW2.pdb
+E:\Projects\Crypto\SDES_HW2\SDES_HW2\SDES_HW2\obj\Debug\SDES_HW2.csprojResolveAssemblyReference.cache
+E:\Projects\Crypto\SDES_HW2\SDES_HW2\SDES_HW2\obj\Debug\SDES_HW2.exe
+E:\Projects\Crypto\SDES_HW2\SDES_HW2\SDES_HW2\obj\Debug\SDES_HW2.pdb
