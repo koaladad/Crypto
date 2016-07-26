@@ -37,6 +37,32 @@ namespace SDES_HW2
                         Console.WriteLine("2nd key");
                         PrintIntArray(secondKey);
 
+                        int[] initial_perm = IP(eightBitInput);
+
+                        Console.WriteLine("After initial permutation::");
+                        PrintIntArray(initial_perm);
+
+                        int[] FK1 = FK(initial_perm, firstKey);
+
+                        Console.WriteLine("After FK1::");
+                        PrintIntArray(FK1);
+
+                        int[] post_SW = SW(FK1);
+
+                        Console.WriteLine("Post SW::");
+                        PrintIntArray(post_SW);
+
+                        int[] FK2 = FK(post_SW, secondKey);
+
+                        Console.WriteLine("Post FK2::");
+                        PrintIntArray(FK2);
+
+                        int[] ciphertext = IPInverse(FK2);
+
+                        Console.WriteLine("***CIPHERTEXT***::");
+                        PrintIntArray(ciphertext);
+
+
                         Console.WriteLine("\nMake a selection:");
                         Console.WriteLine("1. Encrypt");
                         Console.WriteLine("2. Decrypt");
@@ -47,7 +73,47 @@ namespace SDES_HW2
 
                     case "2":
                         //decryption happens here
-                        Console.WriteLine("\nDecryption");
+                        //encryption happens here
+                        Console.WriteLine("\n***Decryption***");
+                        Console.WriteLine("Enter the 8-bit ciphertext as input");
+                        int[] eightBitInput_d = GetInput(8);
+                        int[] tenBitKey_d = GetInput(10);
+                        //you now have 8-bit input and key to work with
+
+                        //Generate SDES keys
+                        int[] firstKey_d = GenerateSDESKey(tenBitKey_d, "keyone");
+                        int[] secondKey_d = GenerateSDESKey(tenBitKey_d, "keytwo");
+
+                        Console.WriteLine("1st key");
+                        PrintIntArray(firstKey_d);
+                        Console.WriteLine("2nd key");
+                        PrintIntArray(secondKey_d);
+                        
+                        int[] initial_perm_d = IP(eightBitInput_d);
+
+                        Console.WriteLine("After initial permutation::");
+                        PrintIntArray(initial_perm_d);
+
+                        int[] FK1_d = FK(initial_perm_d, secondKey_d);
+
+                        Console.WriteLine("After FK1::");
+                        PrintIntArray(FK1_d);
+
+                        int[] post_SW_d = SW(FK1_d);
+
+                        Console.WriteLine("Post SW::");
+                        PrintIntArray(post_SW_d);
+
+                        int[] FK2_d = FK(post_SW_d, firstKey_d);
+
+                        Console.WriteLine("Post FK2::");
+                        PrintIntArray(FK2_d);
+
+                        int[] ciphertext_d = IPInverse(FK2_d);
+
+                        Console.WriteLine("***CIPHERTEXT***::");
+                        PrintIntArray(ciphertext_d);
+
 
                         Console.WriteLine("\nMake a selection:");
                         Console.WriteLine("1. Encrypt");
@@ -340,6 +406,241 @@ namespace SDES_HW2
             outputArray[5] = inputArray[1];
             outputArray[6] = inputArray[2];
             outputArray[7] = inputArray[3];
+
+            return outputArray;
+        }
+
+        //accepts 2 4-bit arrays, returns 4-bit array with XOR result
+        public static int[] XOR(int[] top, int[] bot)
+        {
+            int[] outputArray = { 0, 0, 0, 0};
+
+            if (top.Length == 8 && bot.Length == 8)
+            {
+                //handle 8-bit XOR
+                int[] eightBitOutputArray = {0,0,0,0,0,0,0,0};
+                eightBitOutputArray[0] = top[0] ^ bot[0];
+                eightBitOutputArray[1] = top[1] ^ bot[1];
+                eightBitOutputArray[2] = top[2] ^ bot[2];
+                eightBitOutputArray[3] = top[3] ^ bot[3];
+                eightBitOutputArray[4] = top[4] ^ bot[4];
+                eightBitOutputArray[5] = top[5] ^ bot[5];
+                eightBitOutputArray[6] = top[6] ^ bot[6];
+                eightBitOutputArray[7] = top[7] ^ bot[7];
+
+
+                return eightBitOutputArray;
+            }
+            else if (top.Length != 4 || bot.Length != 4)
+            {
+                Console.WriteLine("ERROR in XOR, top or bottom int array is not of length 4, returning empty output array");
+                return outputArray; //return empty output array
+            }
+
+            outputArray[0] = top[0] ^ bot[0];
+            outputArray[1] = top[1] ^ bot[1];
+            outputArray[2] = top[2] ^ bot[2];
+            outputArray[3] = top[3] ^ bot[3];
+            return outputArray;
+        }
+
+        //FK function
+        //takes 8-bit array for input and 8-bit key, returns 8-bits
+        public static int[] FK(int[] input, int[] key)
+        {
+            int[] outputArray = { 0, 0, 0, 0, 0, 0, 0, 0 };
+            if (input.Length != 8)
+            {
+                Console.WriteLine("Error in FK - input array is not 8-bits long, returning empty array");
+                return outputArray;
+            }
+
+            int[] lhs = { input[0], input[1], input[2], input[3] };
+            int[] rhs = { input[4], input[5], input[6], input[7] };
+
+            //rhs goes through EP
+            int[] eight_bit_ep_result = EP(rhs);
+
+            int[] post_ep_xor = XOR(eight_bit_ep_result, key);
+
+            int[] post_ep_lhs = {post_ep_xor[0], post_ep_xor[1], post_ep_xor[2], post_ep_xor[3]};
+            int[] post_ep_rhs = { post_ep_xor[4], post_ep_xor[5], post_ep_xor[6], post_ep_xor[7] };
+
+
+            int[] s0_result = S0(post_ep_lhs);
+            int[] s1_result = S1(post_ep_rhs);
+
+            //4-bits int array fed into P4
+            int[] preP4array = CombineTwoBitIntArray(s0_result, s1_result);
+
+            //4-bit result from P4
+            int[] postP4array = P4(preP4array);
+
+            int[] result_lhs = XOR(lhs, postP4array);
+            //rhs gets passed through untouched
+            int[] result_rhs = rhs;
+
+            //combine resulting LHS and RHS right before end of FK
+            int[] realOutputArray = CombineFourBitIntArray(result_lhs, result_rhs);
+
+            return realOutputArray;
+        }
+
+        //E/P, expansion/permutation, expands 4-bit array into 8-bit array
+        // [0][1][2][3] INPUT
+        // [3][0][1][2][1][2][3][1] OUTPUT
+        public static int[] EP(int[] input)
+        {
+            int[] outputArray = { 0, 0, 0, 0, 0, 0, 0, 0 };
+            if (input.Length != 4)
+            {
+                Console.WriteLine("ERROR in E/P, input array is not of length 4, returning empty output array");
+                return outputArray; //return empty output array
+            }
+
+            outputArray[0] = input[3];
+            outputArray[1] = input[0];
+            outputArray[2] = input[1];
+            outputArray[3] = input[2];
+            outputArray[4] = input[1];
+            outputArray[5] = input[2];
+            outputArray[6] = input[3];
+            outputArray[7] = input[1];
+
+            return outputArray;
+        }
+
+        //performs S0 table lookup, turns 4 bits into 2
+        public static int[] S0(int[] input)
+        {
+            int[,] s0 = new int[,]
+            {
+                {1,0,3,2},
+                {3,2,1,0},
+                {0,2,1,3},
+                {3,1,3,2}
+            };
+
+            if (input.Length != 4)
+            {
+                Console.WriteLine("ERROR IN S0 - input length != 4");
+                return (new int[]{ 0,0,0,0});
+            }
+
+            int rowval = GetBinary(input[0],input[3]);
+            int colval = GetBinary(input[1],input[2]);
+
+            int x = s0[rowval,colval];
+            int[] outputArray = GetInt(x);
+
+            //2 bit int array is return
+            return outputArray;
+        }
+
+        //performs S0 table lookup, turns 4 bits into 2
+        public static int[] S1(int[] input)
+        {
+            int[,] s1 = new int[,]
+            {
+                {0,1,2,3},
+                {2,0,1,3},
+                {3,0,1,0},
+                {2,1,0,3}
+            };
+
+            if (input.Length != 4)
+            {
+                Console.WriteLine("ERROR IN S1 - input length != 4");
+                return (new int[] { 0, 0, 0, 0 });
+            }
+
+            int rowval = GetBinary(input[0], input[3]);
+            int colval = GetBinary(input[1], input[2]);
+
+            int x = s1[rowval, colval];
+            int[] outputArray = GetInt(x);
+
+            //2 bit int array is return
+            return outputArray;
+        }
+
+        //permutation
+        //INPUT [0][1][2][3]
+        //OUTPUT[1][3][2][0]
+        public static int[] P4(int[] input)
+        {
+            int[] outputArray = { input[1], input[3], input[2], input[0]};
+            return outputArray;
+        }
+
+        //given an int, returns a 2-bit array of the binary result
+        public static int[] GetInt(int num)
+        {
+            int[] outputArray = { 0, 0 };
+
+            if (num == 0)
+            {
+                return outputArray;
+            }
+            if (num == 1)
+            {
+                outputArray[1] = 1;
+                return outputArray;
+            }
+            if (num == 2)
+            {
+                outputArray[0] = 1;
+                return outputArray;
+            }
+            if (num == 3)
+            {
+                outputArray[0] = 1;
+                outputArray[1] = 1;
+                return outputArray;
+            }
+
+            Console.WriteLine("Error in GetInt, input num > 3 OR < 0, returning 0.");
+            return outputArray;
+        }
+
+        //given two ints that are assumed to be only 0's and 1's, returns the resulting binary number
+        public static int GetBinary(int first, int second)
+        {
+            if (first == 0 && second == 0)
+            {
+                return 0;
+            }
+            else if (first == 0 && second == 1)
+            {
+                return 1;
+            }
+            else if (first == 1 && second == 0)
+            {
+                return 2;
+            }
+            else if (first == 1 && second == 1)
+            {
+                return 3;
+            }
+            else
+            {
+                Console.WriteLine("INVALID INPUT in GetBinary, returning 0");
+                return 0;
+            }
+        }
+
+        //adds 2 2-element int arrays together into 1 4-element int array
+        public static int[] CombineTwoBitIntArray(int[] first, int[] second)
+        {
+            int[] outputArray = {first[0], first[1],second[0],second[1] };
+
+            return outputArray;
+        }
+
+        //adds 2 4-element int arrays together into 1 8-element int array
+        public static int[] CombineFourBitIntArray(int[] first, int[] second)
+        {
+            int[] outputArray = {first[0],first[1],first[2],first[3],second[0],second[1],second[2],second[3]};
 
             return outputArray;
         }
