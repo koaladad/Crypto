@@ -7,7 +7,7 @@ class RSAKeys
 {
 public:
 	RSAKeys(); // default constructor; set private data members to default values
-	void GenerateKeys();
+	void GeneratePrimeKeys();
 
 private:
 	int p, q; // randomly? generated prime numbers greater than 10 000
