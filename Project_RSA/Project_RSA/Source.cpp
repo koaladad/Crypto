@@ -1,10 +1,17 @@
 #include <iostream>
 #include <Windows.h>
+#include <ctime>
+#include <cstdlib>
+#include <string>
+#include <stdlib.h>
+#include <math.h>
 #include "RSAKeys.h"
 using namespace std;
 
-bool IsPrime(unsigned long num);
-unsigned long GetRandomPrime();
+
+//bool IsPrime(unsigned long num);
+//unsigned long GetRandomPrime();
+
 
 int main()
 {
@@ -32,23 +39,26 @@ int main()
 		if (choice[0] == 'A')
 		{
 			cout << "-RSA Key Generation-" << endl 
-				 << "Please enter: ";
+				 << "";
 
-			unsigned int randPrime = GetRandomPrime();
-			cout << "Random Prime is " << randPrime << endl;
-			
-			int num;
-			do {
-				cout << "Enter a number (0 to quit): " << endl;
-				cin >> num;
-				if (num) {
-					if (IsPrime(num))
-						cout << num << " is a prime number " << endl;
-					else
-						cout << num << " is NOT a prime number " << endl;
-				}
-			} while (num > 0);
 
+			RSAKeys newkeys = RSAKeys(); // For Testing 
+
+
+			//unsigned int randPrime = GetRandomPrime();
+			//cout << "Random Prime is " << randPrime << endl;
+			//
+			//int num;
+			//do {
+			//	cout << "Enter a number (0 to quit): " << endl;
+			//	cin >> num;
+			//	if (num) {
+			//		if (IsPrime(num))
+			//			cout << num << " is a prime number " << endl;
+			//		else
+			//			cout << num << " is NOT a prime number " << endl;
+			//	}
+			//} while (num > 0);
 
 		}
 		else if (choice[0] == 'B')
@@ -83,48 +93,49 @@ int main()
 	return 0;
 }
 
-bool IsPrime(unsigned long num)
-{
-	//<2 not prime
-	if (num < 2) 
-		return false;
 
-	//div by 2 not prime
-	if (num > 2 && (num % 2) == 0)
-		return false;
-
-	if (num % 3 == 0)
-		return false;
-
-	//2 is prime
-	if (num == 2)
-		return true;
-
-	//check all numbers up to that number to see if prime
-	//only need to check up to square root of number for primality
-	//only need to check odd numbers
-	for (unsigned long i = 3; i < sqrt(num); i+=2)
-	{
-		//cout << "checking: " << i << endl;		
-		if ((num % i) == 0)
-		{
-			return false;
-		}
-	}
-	//passed through all tests, is prime
-	return true; 
-}
+//bool IsPrime(unsigned long num)
+//{
+//	//<2 not prime
+//	if (num < 2) 
+//		return false;
+//
+//	//div by 2 not prime
+//	if (num > 2 && (num % 2) == 0)
+//		return false;
+//
+//	if (num % 3 == 0)
+//		return false;
+//
+//	//2 is prime
+//	if (num == 2)
+//		return true;
+//
+//	//check all numbers up to that number to see if prime
+//	//only need to check up to square root of number for primality
+//	//only need to check odd numbers
+//	for (unsigned long i = 3; i < sqrt(num); i+=2)
+//	{
+//		//cout << "checking: " << i << endl;		
+//		if ((num % i) == 0)
+//		{
+//			return false;
+//		}
+//	}
+//	//passed through all tests, is prime
+//	return true; 
+//}
 
 //gets a random prime between 10k and 100k
-unsigned long GetRandomPrime()
-{
-	unsigned long max = 100000;
-	unsigned long min = 10000;
-	unsigned long returnVal = rand() % (max - min + 1) + min;
-	while (!IsPrime(returnVal))
-	{
-		returnVal = rand() % (max - min + 1) + min;
-	}
-
-	return returnVal;
-}
+//unsigned long GetRandomPrime()
+//{
+//	unsigned long max = 100000;
+//	unsigned long min = 10000;
+//	unsigned long returnVal = rand() % (max - min + 1) + min;
+//	while (!IsPrime(returnVal))
+//	{
+//		returnVal = rand() % (max - min + 1) + min;
+//	}
+//
+//	return returnVal;
+//}

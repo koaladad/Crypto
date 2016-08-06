@@ -44,65 +44,178 @@ Public Key modulus N
 
 RSAKeys::RSAKeys()
 {
-	// Step 1: A.1.1.2 Generation of the Probable Primes p and q Using an Approved Hash Function 
-	// GenerateProbablePrimes();
+	// STEP 1:  GENERATE PRIME NUMBERS (p, q)
 
+	// 1.1: GENERATE FIRST LARGE ODD NUMBER -> GENERATE PRIME -> GET PRIME NUM LENGTH
+	// firstLargeOdd[2] array returns a pair of {largeOddRandNumber, randNumLength};
+	unsigned ll firstLargeOdd[2];
+	GenerateLargeOddNumber(firstLargeOdd); // CONVERT ODD NUMBER TO GET FIRST PRIME VIA PRIMALITY TEST
+	p = GeneratePrime(firstLargeOdd[0]); // firstLargeOdd[0] is unsigned long long largeOddNumber (first prime candidate)
+	// Make a getter function that counts the number of digits after getting the right prime num
+	pLength = firstLargeOdd[1]; // firstLargeOdd[1] is length/number of digits of the first prime candidate
+	
+	// 1.2: GENERATE SECOND LARGE ODD NUMBER -> GENERATE PRIME -> GET PRIME NUM LENGTH
+	// secondLargeOdd[2] array returns a pair of {largeOddRandNumber, randNumLength};
+	unsigned ll secondLargeOdd[2];
+	GenerateLargeOddNumber(secondLargeOdd); // CONVERT ODD NUMBER TO GET FIRST PRIME VIA PRIMALITY TEST
+	q = GeneratePrime(secondLargeOdd[0]); // secondLargeOdd[0] is unsigned long long largeOddNumber (second prime candidate)
+	// Make a getter function that counts the number of digits after getting the right prime num
+	qLength = secondLargeOdd[1]; // secondLargeOdd[1] is length/number of digits of the second prime candidate
 
-	// Compute N
+	// Check and redo q if it's the same as p
+	if (p == q)
+	{
+		GenerateLargeOddNumber(secondLargeOdd); // CONVERT ODD NUMBER TO GET FIRST PRIME VIA PRIMALITY TEST
+		q = secondLargeOdd[0]; // secondLargeOdd[0] is unsigned long long largeOddNumber (second prime candidate)
+		qLength = secondLargeOdd[1];
+		//unsigned ll secondLargeOddNum = GenerateLargeOddNumber();
+		//q = GeneratePrime(secondLargeOddNum);
+	}
+
+	// STEP 2: Compute N
 	N = p*q;
 
-	// Compute Euler's Totient Function
+	// STEP 3:	Compute Euler's Totient Function
 
-	// Randomly generate encryption key e
+	// STEP 4: Randomly generate encryption key e
 	// Public Key exponent e
 
-
 }
 
-/*
-	Step 1: A.1.1.2 Generation of the Probable Primes p and q Using an Approved Hash Function 
-*/
-void RSAKeys::GenerateProbablePrimes()
+void RSAKeys::GenerateLargeOddNumber(unsigned ll * largeOddPair)
 {
-	// http://crypto.stackexchange.com/questions/71/how-can-i-generate-large-prime-numbers-for-rsa
+	// Generate random number from 10,007 to ...
+	unsigned ll randNum;
+	srand(time(NULL));
+	//randNum = rand() % 94723 + 10007;		// Range: 10 007 to 104 729 (5 to 6 digits) 
+	randNum = rand() % 982451654 + 10007;	// Range: 10 007 to 982 451 654 (5 to 9 digits) 
+	// Can change range up to higher values for more randomization
+	// Higher range <-> More difficult to crack
+	// unsigned long long max val: up to 18 446 744 073 709 551 615 (up to 20 digits)
 
-	// INPUT
-	// pLength: desired length of the prime p (in bits)
-	// --need to be greater than 10,000, so length of 5 bits or more: [][][][][] 
+	// Convert ll randNum to a char array but in reverse
+	char randNumArr[256];
+	int randNumLength = 0;
+	while (randNum)
+	{
+		randNumArr[randNumLength++] = randNum % 10;
+		randNum /= 10;
+	}
 
-	// qLength:	desired length of the prime q (in bits) 
-	// --need to be greater than 10,000, so length of 5 bits or more: [][][][][]
+	// Replace first digit with any number range 1 to 9 if first digit is 0
+	if (randNumArr[0] == 0)
+	{
+		randNumArr[0] = rand() % 10 + 1; // range 1 to 9
+	}
 
-	// seedlen: desired length of the domain parameter seed
-	// --need to be greater than or equal to qLength, so length of 5 bits or more: [][][][][]
-	// seedlen = len (domain_parameter_seed); 
-					// domain_parameter_seed: an arbitrary seed that was used to generate p and q
-					// --could be anything, e.g., a user’s favorite number or a random or pseudorando number output by a random number generator(see SP 800 - 90)
-					// --determines a sequence of candidates for p and q in the required intervals that are then tested for primality using a probabilistic primality test(see Appendix C.3)
+	// Check if last digit is even -> Convert to odd
+	int lastDigit = randNumArr[randNumLength - 1];
+	if (lastDigit % 2 == 0)
+	{
+		lastDigit++;
+		randNumArr[randNumLength - 1] = lastDigit;
+	}
+
+	// After making necessary changes, convert char array of integer elements back to ll
+	for (int i = 0; i < randNumLength; i++)
+	{
+		randNum = randNum * 10 + randNumArr[i];
+	}
+	// randNum should now be in correct format: large odd number more than 10,000
+
+	largeOddPair[0] = randNum;
+	largeOddPair[1] = randNumLength;
+}
+
+/* GENERATNG A LARGE ODD NUMBER AS A PRIME CANDIDATE
+unsigned ll RSAKeys::GenerateLargeOddNumber()
+{
+	// Generate random number from 10,007 to ...
+	unsigned ll randNum;
+	srand(time(NULL));
+	//randNum = rand() % 94723 + 10007;		// Range: 10 007 to 104 729 (5 to 6 digits) 
+	randNum = rand() % 982451654 + 10007;	// Range: 10 007 to 982 451 654 (5 to 9 digits) 
+											// Can change range up to higher values for more randomization
+											// Higher range <-> More difficult to crack
+											// unsigned long long max val: up to 18 446 744 073 709 551 615 (up to 20 digits)
 	
-	// Prompt user for desired bit length for primes p and q (5 or more)
-	int pLength = 5; 
-	int qLength = 5;
+	// Convert ll randNum to a char array but in reverse
+	char randNumArr[256];
+	int randNumLength = 0;
+	while (randNum)
+	{
+		randNumArr[randNumLength++] = randNum % 10;
+		randNum /= 10;
+	}
 
+	// Replace first digit with any number range 1 to 9 if first digit is 0
+	if (randNumArr[0] == 0)
+	{
+		randNumArr[0] = rand() % 10 + 1; // range 1 to 9
+	}
 
+	// Check if last digit is even -> Convert to odd
+	int lastDigit = randNumArr[randNumLength - 1];
+	if (lastDigit % 2 == 0)
+	{
+		lastDigit++;
+		randNumArr[randNumLength - 1] = lastDigit;
+	}
 
-	// OUTPUT
-	// bool status: true if valid; false if invalid
-	// --in main caller, if true is returned, get values of p and q
-	// --				 if false is returned, assign p = q = 0;
+	// After making necessary changes, convert char array of integer elements back to ll
+	for (int i = 0; i < randNumLength; i++)
+	{
+		randNum = randNum * 10 + randNumArr[i];
+	}
+	// randNum should now be in correct format: large odd number more than 10,000
 
-	// p, q: generated primes p and q
+	return randNum;
+}*/
 
-	// domain_parameter_seed: seed used to generate p and q (optional)
-
-	// counter: count value determined during generation
-}
-
-/*
-	Step 2: Validation of the Probable Primes p and q that were Generated Using an Approved Hash Function
-*/
-bool RSAKeys::ValidateProbablePrimes()
+unsigned ll RSAKeys::GeneratePrime(unsigned ll largeOddNum)
 {
-
-	return true;
+	unsigned ll primeNum = largeOddNum;
+	bool isPrime = CheckPrimality(largeOddNum);
+	
+	if (!isPrime) // if not prime
+	{
+		cout << "not prime" << endl;
+		primeNum = GeneratePrime(largeOddNum + 2);
+	}
+	return primeNum;
 }
+
+/* FERMAT PRIMALITY TESTING */
+bool RSAKeys::CheckPrimality(unsigned ll randNum)
+{
+	int iterations = 50; // can change number of times to verify that randNum is truly a prime
+
+	for (int i = 0; i < iterations; i++)
+	{
+		ll a = rand() % (randNum - 1) + 1; // Range from 1 to (randNum - 1)
+		// a^(randNum - 1), mod randNum 
+		if (Modulo(a, randNum - 1, randNum) != 1)
+		{
+			return false;
+		}
+	}
+	return true;
+
+}
+
+unsigned ll RSAKeys::Modulo(ll base, ll exponent, ll mod)
+{
+	ll x = 1;
+	ll y = base;
+	while (exponent > 0)
+	{
+		if (exponent % 2 == 1)
+		{
+			x = (x * y) % mod;
+		}
+		y = (y * y) % mod;
+		exponent = exponent / 2;
+	}
+	return x % mod;
+}
+

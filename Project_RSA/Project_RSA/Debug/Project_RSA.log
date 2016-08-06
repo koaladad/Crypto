@@ -1,0 +1,7 @@
+﻿  RSAKeys.cpp
+c:\users\ndelacru\documents\visual studio 2013\projects\project_rsa\project_rsa\rsakeys.cpp(55): warning C4244: '=': conversion from 'unsigned __int64' to 'int', possible loss of data
+c:\users\ndelacru\documents\visual studio 2013\projects\project_rsa\project_rsa\rsakeys.cpp(63): warning C4244: '=': conversion from 'unsigned __int64' to 'int', possible loss of data
+c:\users\ndelacru\documents\visual studio 2013\projects\project_rsa\project_rsa\rsakeys.cpp(73): warning C4244: '=': conversion from 'unsigned __int64' to 'int', possible loss of data
+c:\users\ndelacru\documents\visual studio 2013\projects\project_rsa\project_rsa\rsakeys.cpp(92): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+  Project_RSA.vcxproj -> C:\Users\ndelacru\Documents\Visual Studio 2013\Projects\Project_RSA\Debug\Project_RSA.exe
+  Project_RSA.vcxproj -> C:\Users\ndelacru\Documents\Visual Studio 2013\Projects\Project_RSA\Debug\Project_RSA.pdb (Full PDB)
