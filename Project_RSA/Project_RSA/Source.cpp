@@ -12,14 +12,17 @@
 using namespace std;
 
 
-bool IsPrime(unsigned long num);
-unsigned long GetRandomPrime(unsigned long min, unsigned long max);
-unsigned long GetZ(unsigned long p, unsigned long q);
-unsigned long GetK(unsigned long magicNumber);
-unsigned long GetN(unsigned long p, unsigned long q);
-unsigned long GetJ(unsigned long z, unsigned long k, unsigned long iMin, unsigned long iMax);
-unsigned long EncryptionResult(unsigned long p, unsigned long k, unsigned long n);
-unsigned long DecryptionResult(unsigned long e, unsigned long j, unsigned long n);
+bool IsPrime(long long int num);
+long long int GetRandomPrime(long long int min, long long int max);
+long long int GetZ(long long int p, long long int q);
+long long int GetK(long long int magicNumber);
+long long int GetN(long long int p, long long int q);
+long long int GetJ(long long int z, long long int k, unsigned long iMin, unsigned long iMax);
+long long int EncryptionResult(long long int p, long long int k, long long int n);
+long long int DecryptionResult(long long int e, long long int j, long long int n);
+long long int power(long long int a, long long int b, long long int MOD);
+long long int modulo(long long int n, long long int p);
+long long int modInverse(long long int n, long long int p);
 
 int main()
 {
@@ -33,15 +36,16 @@ int main()
 	//Grant vars for testing
 	bool numbersGenerated = false;
 	unsigned long min = 10000;
-	unsigned long max = 20000;
-	unsigned long p = 0;
-	unsigned long q = 0;
-	unsigned long n = 0;
-	unsigned long z = 0; //totient
-	unsigned long k = 0; //coprime to z/totient function
-	unsigned long j = 0; //secret key
-	unsigned long plaintext = 0;
-	unsigned long encryptedtext = 0;
+	unsigned long max = 50000;
+	//initial vars 
+	long long int p = 43;
+	long long int q = 47;
+	long long int n = 2021;
+	long long int z = 1932; //totient
+	long long int k = 307; //coprime to z/totient function
+	long long int j = 1567; //secret key
+	long long int plaintext = 0;
+	long long int encryptedtext = 0;
 
 	//Encryption requires K & N, with input P to produce E
 	//Decryption requires J & N, with input E to produce P
@@ -53,7 +57,6 @@ int main()
 
 	while (run)
 	{
-
 		cout << "******************************************" << endl
 			<< "Please select from the following options: " << endl
 			<< "[A]  RSA Key Generation" << endl
@@ -112,7 +115,7 @@ int main()
 					<< "Please enter the plaintext to encrypt: " << endl;
 
 				std::string line;
-				unsigned long plaintext;
+				////unsigned long plaintext;
 				while (std::getline(std::cin, line))
 				{
 					std::stringstream ss(line);
@@ -130,7 +133,13 @@ int main()
 				cout << "k: " << k << endl;
 				cout << "n: " << n << endl;
 
-				encryptedtext = EncryptionResult(plaintext, k, n);
+				long long int param1 = plaintext;
+				long long int param2 = k;
+				long long int param3 = n;
+				//long long int param1 = 14;
+				//long long int param2 = 7;
+				//long long int param3 = 33;
+				encryptedtext = EncryptionResult(param1,param2,param3);
 				std::cout << endl << "*** The resulting encrypted text is ***: " << encryptedtext << std::endl;
 
 			}
@@ -144,7 +153,7 @@ int main()
 				<< "Please enter: " << endl;
 
 			std::string line;
-			unsigned long encryptedtext;
+			//unsigned long encryptedtext;
 			while (std::getline(std::cin, line))
 			{
 				std::stringstream ss(line);
@@ -158,8 +167,11 @@ int main()
 				std::cout << "Requirements: must be a number (no chars allowed)" << std::endl;
 			}
 			
-			plaintext = DecryptionResult(encryptedtext,j,p);
-			std::cout << endl << "*** The resulting encrypted text is ***: " << plaintext << std::endl;
+			long long int param1 = encryptedtext;
+			long long int param2 = j;
+			long long int param3 = n;
+			plaintext = DecryptionResult(param1,param2,param3);
+			std::cout << endl << "*** The resulting decrypted text is ***: " << plaintext << std::endl;
 
 		}
 		else if (choice[0] == 'D')
@@ -183,7 +195,7 @@ int main()
 }
 
 
-bool IsPrime(unsigned long num)
+bool IsPrime(long long int num)
 {
 	//<2 not prime
 	if (num < 2) 
@@ -203,7 +215,7 @@ bool IsPrime(unsigned long num)
 	//check all numbers up to that number to see if prime
 	//only need to check up to square root of number for primality
 	//only need to check odd numbers
-	for (unsigned long i = 3; i < sqrt(num); i+=2)
+	for (unsigned long i = 3; i < sqrt(num)+1; i+=2)
 	{
 		//cout << "checking: " << i << endl;		
 		if ((num % i) == 0)
@@ -216,12 +228,12 @@ bool IsPrime(unsigned long num)
 }
 
 //gets a random prime between 10k and 100k
-unsigned long GetRandomPrime(unsigned long iMin, unsigned long iMax)
+long long int GetRandomPrime(long long int iMin, long long int iMax)
 {
-	unsigned long min = iMin;
-	unsigned long max = iMax;
+	long long int min = iMin;
+	long long int max = iMax;
 	
-	unsigned long returnVal = rand() % (max - min + 1) + min;
+	long long int returnVal = rand() % (max - min + 1) + min;
 	while (!IsPrime(returnVal))
 	{
 		returnVal = rand() % (max - min + 1) + min;
@@ -231,81 +243,97 @@ unsigned long GetRandomPrime(unsigned long iMin, unsigned long iMax)
 }
 
 //Gets N = P * Q
-unsigned long GetN(unsigned long p, unsigned long q)
+long long int GetN(long long int p, long long int q)
 {
 	return p*q;
 }
 
 //Gets the totient, z = (p-1) * (q-1)
-unsigned long GetZ(unsigned long p, unsigned long q)
+long long int GetZ(long long int p, long long int q)
 {
 	return (p - 1)*(q - 1);
 }
 
 //gets a co prime: prime number in a range not divisible by a specific number (totient/z)
-unsigned long GetK(unsigned long magicNumber)
+long long int GetK(long long int magicNumber)
 {
-	unsigned long min = 1;
-	unsigned long max = magicNumber-1;
+	long long int min = 1;
+	long long int max = magicNumber-1;
 
-	unsigned long returnVal = rand() % (max - min + 1) + min;
+	long long int returnVal = GetRandomPrime(min, max);
 
 	//co-prime must be prime, and also cannot be divisible by "magic number"
-	while (!IsPrime(returnVal) || (returnVal % magicNumber == 0) )
+	while ( returnVal % magicNumber == 0 ) //if it is keep going
 	{
-		returnVal = rand() % (max - min + 1) + min;
+		returnVal = GetRandomPrime(min, max);
 	}
 
 	return returnVal;
 }
 
 //gets secret key, J, requires z & k
-unsigned long GetJ(unsigned long z, unsigned long k, unsigned long iMin, unsigned long iMax)
+long long int GetJ(long long int z, long long int k, unsigned long iMin, unsigned long iMax)
 {
 	unsigned long min = iMin;
 	unsigned long max = iMax;
 
-	//return value
-	unsigned long j = 0;
-
-	do
-	{
-		//j = rand() % (max - min + 1) + min;
-		j = GetRandomPrime(min, max);
-	} while ( !( (j*k) % z != 1) );
+	long long int j = 0;
+	//calculate secret key using euclidean algorithm and back substitution
+	j = modInverse(k,z);
 
 	return j;
 }
 
 //Encryption requires K & N, with input P to produce E
-unsigned long EncryptionResult(unsigned long p, unsigned long k, unsigned long n)
+long long int EncryptionResult(long long int p, long long int k, long long int n)
 {
-	unsigned long e= 0;
-
 	//calculate encrypted text
 	//E = p^k - ( n * ( (p^k) / n ) )
 	//e = pow(p,k) - ( n * ( (pow(p,k)) / n )
 
-	e = 
-		(
-		pow(p, k) - 
-			(
-			n * ((pow(p, k)) / n)
-			)
-		);
-
+	long long int e = power(p,k,n);
 
 	return e;
 }
 
 //Decryption requires J & N, with input E to produce P
-unsigned long DecryptionResult(unsigned long e, unsigned long j, unsigned long n)
+long long int DecryptionResult(long long int e, long long int j, long long int n)
 {
-	unsigned long p=0;
-
 	//decrypt text
 	//P = e^j - ( ( (e^j) / n ) * n)
-	p = pow(e, j) - (((pow(e, j) / n) * n));
+	//p = power(e, j,n) - (((power(e, j) / n) * n));
+	long long int p = power(e, j, n);
 
 	return p;
+}
+
+//returns the value modulo
+long long int power(long long int a, long long int b, long long int MOD)
+{
+	long long int ans = 1;
+
+	while (b)
+	{
+		if (b & 1) ans = (ans*a) % MOD;
+		a = (a*a) % MOD;
+		b = b / 2;
+	}
+	return ans;
+}
+
+long long int modulo(long long int n, long long int p)
+{
+	long long int r = n%p;
+	if (((p > 0) && (r < 0)) || ((p < 0) && (r > 0)))
+		r += p;
+	return r;
+}
+
+//Finds modular inverse
+long long int modInverse(long long int k, long long int z) {
+	k = modulo(k, z);
+	for (int x = 1; x < z; x++) {
+		if (modulo(k*x, z) == 1) return x;
+	}
+	return 0;
 }
